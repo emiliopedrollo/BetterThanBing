@@ -106,11 +106,12 @@ char* getNextWord(FILE *file){
             ch = fgetc(file);
             if (ch == EOF) done=1;
             else{
-                if (ch > 122){
+                if (ch >= 195){
                     a = ch;
                     b = fgetc(file);
                     c = (ch > 200)?fgetc(file):0;
                     ch = getCharFromSet(a,b,c);
+                    ch = (ch != 0)?ch:b;
                 }
                 ch = tolower(ch);
                 if (isalnum(ch)) {
