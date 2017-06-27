@@ -135,21 +135,23 @@ char* getNextWord(FILE *file){
 
 void readFiles() {
     struct listItem *fileInList;
-    char *word;
+    char *word, *last, *tmp;
     bool found;
 
     FILE * file;
 
+    Connections *connections;
+
     doNotIndex = newTrieNode();
     indexedWords = newTrieNode();
-    struct TrieNode *node;
-    LocationInfo *location;
+    struct TrieNode *node, *lastNode;
+    Word *location;
 
 
-    if( access( "naoindexar.txt", F_OK ) != -1 && (file = fopen("naoindexar.txt","r"))) {
+    if( access( "listanegativa.txt", F_OK ) != -1 && (file = fopen("listanegativa.txt","r"))) {
         while ((word = getNextWord(file)) != NULL){
             if (searchInTrie(doNotIndex,word) == NULL){
-                insertToTrie(doNotIndex,word,NULL);
+                insertToTrie(doNotIndex, word);
             }
         }
         fclose(file);
@@ -158,27 +160,40 @@ void readFiles() {
     fileInList = files;
     while (fileInList != NULL){
         if ((file = fopen((char*)fileInList->info, "r"))){
-            while ((word = getNextWord(file)) != NULL) {
-                if (searchInTrie(doNotIndex,word)) continue;
-                if ((node = searchInTrie(indexedWords,word)) == NULL) {
-                    insertToTrie(indexedWords, word, newLocation((void*)fileInList));
-                } else {
-                    location = node->location;
+            while ((last = getNextWord(file)) != NULL && searchInTrie(doNotIndex,last));
+            if (last != NULL){
+
+                while ((word = getNextWord(file)) != NULL) {
+                    if (searchInTrie(doNotIndex,word)) continue;
+
+                    if ((lastNode = searchInTrie(indexedWords,last)) == NULL) {
+                        lastNode = insertToTrie(indexedWords, last);
+                    }
+
+                    if ((node = searchInTrie(indexedWords,word)) == NULL) {
+                        node = insertToTrie(indexedWords, word);
+                    }
+
+                    connections = node->word->connections;
                     found = false;
-                    while (location != NULL){
-                        if (((struct listItem*)location->file)->info == fileInList->info){
-                            location->count++;
+                    while (connections != NULL && found == false){
+                        if (connections->word == lastNode->word){
                             found = true;
-                            break;
+                            // todo: here
                         }
-                        location = location->next;
+                        connections = connections->next;
                     }
-                    if (!found){
-                        location = node->location;
-                        while (location->next != NULL) location = location->next;
-                        location->next = newLocation((void*)fileInList);
+                    connections = node->word->connections;
+                    if (!found) {
+                        while (connections->next != NULL) connections = connections->next;
+                        // todo : here too
                     }
+
+                    tmp = last;
+                    last = word;
+                    free(tmp);
                 }
+                free(word);
             }
             fclose(file);
         }
@@ -210,7 +225,7 @@ void readFolder(){
     if (!glob("*.txt", 0, NULL, &buffer)) {
         for (i=0;  i <buffer.gl_pathc; i++) {
 
-            if (strcmp(buffer.gl_pathv[i],"naoindexar.txt") == 0) continue;
+            if (strcmp(buffer.gl_pathv[i],"listanegativa.txt") == 0) continue;
 
             item = addToList(&files,NULL);
 

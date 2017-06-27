@@ -15,16 +15,26 @@ int charToIndex(int c){
     }
 }
 
-LocationInfo *newLocation(void *file)
+Word *newWord(char *textWord)
 {
-    LocationInfo *location;
-    location = malloc(sizeof(LocationInfo));
-    location->file = file;
-    location->count = 1;
-    location->next = NULL;
+    Word *word;
+    word = malloc(sizeof(Word));
+    word->word = malloc((strlen(textWord)+1)*sizeof(char));
+    word->connections = NULL;
 
-    return location;
+    return word;
 }
+
+//LocationInfo *newLocation(void *file)
+//{
+//    LocationInfo *location;
+//    location = malloc(sizeof(LocationInfo));
+//    location->file = file;
+//    location->count = 1;
+//    location->next = NULL;
+//
+//    return location;
+//}
 
 /* Returns new trie node (initialized to NULLs) */
 Trie *newTrieNode(void)
@@ -37,7 +47,7 @@ Trie *newTrieNode(void)
     {
         int i;
 
-        node->location = NULL;
+        node->word = NULL;
         node->isLeaf = false;
 
         for (i = 0; i < ALPHABET_SIZE; i++)
@@ -49,7 +59,7 @@ Trie *newTrieNode(void)
 
 /* If not present, inserts key into trie
    If the key is prefix of trie node, just marks leaf node */
-void insertToTrie(Trie *root, const char *key, LocationInfo *location)
+struct TrieNode *insertToTrie(Trie *root, const char *key)
 {
     int level;
     int index;
@@ -67,8 +77,10 @@ void insertToTrie(Trie *root, const char *key, LocationInfo *location)
     }
 
     /* mark last node as leaf */
-    node->location = location;
+    node->word = newWord((char *) key);
     node->isLeaf = true;
+
+    return node;
 }
 
 struct TrieNode *searchInTrie(Trie *root, const char *key)

@@ -6,17 +6,20 @@
 
 #define ALPHABET_SIZE (37) /* 26 letters + 10 digits + 1 unknown */
 
-typedef struct li {
-    void **file;
-    int count;
-    struct li *next;
-} LocationInfo;
+typedef struct connections{
+    struct word *word;
+    struct connections *next;
+} Connections;
 
+typedef struct word{
+    char *word;
+    Connections *connections;
+} Word;
 
 typedef struct TrieNode
 {
     struct TrieNode *children[ALPHABET_SIZE];
-    LocationInfo *location;
+    Word *word;
     bool isLeaf;
 } Trie;
 
@@ -30,9 +33,9 @@ typedef struct trie {
 */
 
 Trie *newTrieNode(void);
-void insertToTrie(Trie *root, const char *key, LocationInfo *location);
+struct TrieNode * insertToTrie(Trie *root, const char *key);
 struct TrieNode *searchInTrie(Trie *root, const char *key);
-
-LocationInfo *newLocation(void *file);
+Word *newWord(char *textWord);
+//LocationInfo *newLocation(void *file);
 
 #endif /* BETTERTHANBING_TRIE_H */
