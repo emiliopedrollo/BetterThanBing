@@ -8,6 +8,7 @@
 
 typedef struct connections{
     struct word *word;
+    int count;
     struct connections *next;
 } Connections;
 
@@ -23,19 +24,11 @@ typedef struct TrieNode
     bool isLeaf;
 } Trie;
 
-/*
-typedef struct trie {
-    char letter;
-    int childCount;
-    LocationInfo *location;
-    struct trie *childs;
-} TRIE;
-*/
-
 Trie *newTrieNode(void);
 struct TrieNode * insertToTrie(Trie *root, const char *key);
 struct TrieNode *searchInTrie(Trie *root, const char *key);
 Word *newWord(char *textWord);
-//LocationInfo *newLocation(void *file);
+void addConnection(Word *word1, Word *word2);
+void incrementConnection(Word *word1, Word *word2);
 
 #endif /* BETTERTHANBING_TRIE_H */

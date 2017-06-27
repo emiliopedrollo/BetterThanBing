@@ -9,7 +9,7 @@
 #include "utils.h"
 #include "lists.h"
 
-#define LAMBDA(c_) ({ c_ _;})
+/*#define LAMBDA(c_) ({ c_ _;})*/
 
 void exitWithFailureIfFailed(bool test, char *message);
 void readFolder();
@@ -17,74 +17,66 @@ void readFiles();
 
 Trie *doNotIndex, *indexedWords;
 List *files = NULL;
-List *listOfHits = NULL, *hit;
+
 
 int main(int argc, char *argv[]){
 
     struct TrieNode *node;
-    LocationInfo *location;
-    bool done = false, foundPreviousHit;
-    char words[256];
+    bool done = false, firstMatch;
+    char words[256] = "dog";
     char *word;
+    Connections *connection, *subConnection;
 
     readFolder();
     readFiles();
 
     while (!done){
-        printf("Type the words to search (or leave empty to exit): ");
+        printf("Type the word to search (or leave empty to exit): ");
         fgets(words,256,stdin);
 
         if (words[0] == '\n') {
             done = true;
             continue;
         }
-
-        freeList(&listOfHits,  LAMBDA(void _(void **v) { free(*v); }));
-        listOfHits = newList();
-
+    
         word = strtok(words, " \n");
         do {
             if (word == NULL) continue;
+            if (searchInTrie(doNotIndex, word) != NULL) {
+                printf("Word \"%s\" is on negative list\n",word);
+            };
             if ((node = searchInTrie(indexedWords, word)) != NULL){
-                location = node->location;
-                while (location != NULL){
 
-                    foundPreviousHit = false;
-                    hit = listOfHits;
-                    while (hit != NULL){
-                        if (((struct hitsPerFile*)(hit->info))->file == location->file){
-                            ((struct hitsPerFile*)(hit->info))->count += location->count;
-                            foundPreviousHit = true;
-                        }
-                        hit = hit->next;
-                    }
-                    if (!foundPreviousHit){
-                        struct hitsPerFile *hits = malloc(sizeof(struct hitsPerFile));
-                        hits->file=location->file;
-                        hits->count=location->count;
-                        addToList(&listOfHits,(void*) hits);
+                printf("%s={",node->word->word);
+
+                connection = node->word->connections;
+                firstMatch = true;
+                while (connection != NULL){
+
+                    if (!firstMatch) printf(", ");
+                    firstMatch = false;
+
+                    printf("{%s, %d",connection->word->word,connection->count);
+
+                    subConnection = connection->word->connections;
+                    while (subConnection != NULL){
+                        if (subConnection->word != node->word)
+                            printf(", %s, %d",subConnection->word->word,subConnection->count);
+                        subConnection = subConnection->next;
                     }
 
-                    location = location->next;
+                    printf("}");
+
+                    connection = connection->next;
                 }
+
+                printf("}\n");
+            } else {
+                printf("Word \"%s\" was not found on the text files\n",word);
             }
 
 
         } while ((word = strtok(NULL, " \n")));
-
-        sortList(listOfHits,LAMBDA(bool _(void *a, void *b){
-            return ((struct hitsPerFile*)a)->count < ((struct hitsPerFile*)b)->count;
-        }));
-
-        hit = listOfHits;
-        while(hit != NULL){
-
-            printf("The file \"%s\" had %d hit(s) \n",
-                   (char*)((struct listItem*)(((struct hitsPerFile*) hit->info)->file))->info,
-                   ((struct hitsPerFile*) hit->info)->count);
-
-            hit = hit->next;
-        }
 
     }
 
@@ -136,21 +128,17 @@ char* getNextWord(FILE *file){
 void readFiles() {
     struct listItem *fileInList;
     char *word, *last, *tmp;
-    bool found;
 
     FILE * file;
-
-    Connections *connections;
 
     doNotIndex = newTrieNode();
     indexedWords = newTrieNode();
     struct TrieNode *node, *lastNode;
-    Word *location;
 
 
     if( access( "listanegativa.txt", F_OK ) != -1 && (file = fopen("listanegativa.txt","r"))) {
         while ((word = getNextWord(file)) != NULL){
-            if (searchInTrie(doNotIndex,word) == NULL){
+            if (searchInTrie(doNotIndex, word) == NULL){
                 insertToTrie(doNotIndex, word);
             }
         }
@@ -174,20 +162,7 @@ void readFiles() {
                         node = insertToTrie(indexedWords, word);
                     }
 
-                    connections = node->word->connections;
-                    found = false;
-                    while (connections != NULL && found == false){
-                        if (connections->word == lastNode->word){
-                            found = true;
-                            // todo: here
-                        }
-                        connections = connections->next;
-                    }
-                    connections = node->word->connections;
-                    if (!found) {
-                        while (connections->next != NULL) connections = connections->next;
-                        // todo : here too
-                    }
+                    incrementConnection(node->word,lastNode->word);
 
                     tmp = last;
                     last = word;

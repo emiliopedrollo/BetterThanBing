@@ -20,21 +20,60 @@ Word *newWord(char *textWord)
     Word *word;
     word = malloc(sizeof(Word));
     word->word = malloc((strlen(textWord)+1)*sizeof(char));
+    strcpy(word->word,textWord);
     word->connections = NULL;
 
     return word;
 }
 
-//LocationInfo *newLocation(void *file)
-//{
-//    LocationInfo *location;
-//    location = malloc(sizeof(LocationInfo));
-//    location->file = file;
-//    location->count = 1;
-//    location->next = NULL;
-//
-//    return location;
-//}
+void incrementConnection(Word *word1, Word *word2){
+    bool found = false;
+    Connections *connections;
+
+    connections = word1->connections;
+    while (connections != NULL){
+        if (connections->word == word2){
+            found = true;
+            connections->count++;
+            connections = word2->connections;
+            while (connections->word != word1) connections = connections->next;
+            connections->count++;
+            break;
+        }
+        connections = connections->next;
+    }
+    if (!found){
+        addConnection(word1,word2);
+    }
+}
+
+void addConnection(Word *word1, Word *word2)
+{
+    Connections *connections, *connection;
+    connections = word1->connections;
+    connection = malloc(sizeof(Connections));
+    connection->count = 1;
+    connection->next = NULL;
+    connection->word = word2;
+    if (connections == NULL){
+        word1->connections = connection;
+    } else {
+        while (connections->next != NULL) connections = connections->next;
+        connections->next = connection;
+    }
+
+    connections = word2->connections;
+    connection = malloc(sizeof(Connections));
+    connection->count = 1;
+    connection->next = NULL;
+    connection->word = word1;
+    if (connections == NULL){
+        word2->connections = connection;
+    } else {
+        while (connections->next != NULL) connections = connections->next;
+        connections->next = connection;
+    }
+}
 
 /* Returns new trie node (initialized to NULLs) */
 Trie *newTrieNode(void)
@@ -102,19 +141,3 @@ struct TrieNode *searchInTrie(Trie *root, const char *key)
 
     return (node != NULL && node->isLeaf) ? node : NULL;
 }
-
-
-/*LocationInfo find_in_trie(TRIE *trie, char *word, int layer){
-    int i;
-
-    if (trie != NULL){
-        for (i=0;i<(*trie).childCount;i++) {
-            if (word[layer] == (*trie).childs[i].letter){
-                if ((*trie).childs[i].letter == '\0'){
-                    return (*trie).childs[i].location[0];
-                } else return find_in_trie(&(*trie).childs[i], word, layer + 1);
-            }
-        }
-    }
-    return NULL;
-}*/
