@@ -5,9 +5,9 @@ BetterThanBing é um projeto simples de ordenação de cartas desenvolvido como 
 [Emílio B. Pedrollo]: <https://github.com/emiliopedrollo>
 
 ## Obtenção do código fonte
-O código-fonte está disponível publicamente online no endereço https://github.com/emiliopedrollo/BetterThanBing/ e é possível efetuar o download do fonte compactado em *.zip* diretamente no site ou através do gerenciador de versões *git* com a seguinte linha de comando:
+O código-fonte está disponível publicamente online no endereço https://github.com/emiliopedrollo/BetterThanBing/tree/graphs e é possível efetuar o download do fonte compactado em *.zip* diretamente no site ou através do gerenciador de versões *git* com a seguinte linha de comando:
 ```sh
-git clone https://github.com/emiliopedrollo/BetterThanBing.git
+git clone https://github.com/emiliopedrollo/BetterThanBing/tree/graphs
 ```
 
 
@@ -23,11 +23,11 @@ Para compilar basta ir até a pasta contendo o fonte e executar
 ```sh
 cmake . && make
 ```
-O compilador é esta instruído a utilizar o padrão C *ansi* para este projeto. Após a compilação o executável **btb** estará na mesma pasta com os códigos-fonte.
+O compilador é esta instruído a utilizar o padrão C *ansi* para este projeto. Após a compilação o executável **btbg** estará na mesma pasta com os códigos-fonte.
 
 
 ### Utilizando gcc
 Caso você não tenha o *cmake* instalado e não possua permissão administrativas para instala-lo ou simplismente queira utilizar um método mais pimitivo é possível utilizar o compilador padrão *gcc* com a seguinte linha:
 ```sh
-gcc -o btb -std=c11 -ansi main.c trie.h trie.c utils.c utils.h lists.c lists.h
+gcc -o btbg -std=c11 -ansi main.c trie.h trie.c utils.c utils.h lists.c lists.h
 ```
